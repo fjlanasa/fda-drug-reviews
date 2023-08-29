@@ -1,11 +1,8 @@
 import asyncio
-import os
 from sys import argv
 
 from fda.functions import split_documents
 from fda.functions.embed_segments import create_embeddings
-
-open_ai_key = os.getenv("OPENAI_KEY")
 
 
 async def process_documents(limit=None, offset=0):
