@@ -83,7 +83,6 @@ async def process_documents(limit=None, offset=0):
     with Session(engine) as session:
         statement = (
             select(ApplicationDocument)
-            .where(ApplicationDocument.url.endswith("cfm"))
             .offset(offset)
             .limit(limit)
         )
