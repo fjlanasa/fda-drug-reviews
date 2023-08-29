@@ -7,8 +7,15 @@ import httpx
 from sqlmodel import Session, delete
 
 from fda.db.engine import engine
-from fda.db.models import (ActiveIngredient, Application, ApplicationDocument,
-                           OpenFDA, Processing, Product, Submission)
+from fda.db.models import (
+    ActiveIngredient,
+    Application,
+    ApplicationDocument,
+    OpenFDA,
+    Processing,
+    Product,
+    Submission,
+)
 
 
 def load_drugs(url):
