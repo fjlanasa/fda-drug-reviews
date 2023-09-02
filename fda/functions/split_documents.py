@@ -47,9 +47,7 @@ def split_document(doc: ApplicationDocument) -> List[DocumentSegment]:
         return []
 
 
-def split_documents(
-    offset: int = 0, limit: Optional[int] = None
-) -> List[DocumentSegment]:
+def split_documents(offset: int = 0, limit: Optional[int] = None) -> None:
     with Session(engine) as session:
         statement = select(ApplicationDocument).offset(offset).limit(limit)
         docs = session.exec(statement)
@@ -58,7 +56,6 @@ def split_documents(
             segments = [item for sublist in segments for item in sublist]
             session.add_all(segments)
             session.commit()
-            return segments
 
 
 if __name__ == "__main__":

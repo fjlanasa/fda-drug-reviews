@@ -6,9 +6,8 @@ from fda.functions.embed_segments import create_embeddings
 
 
 async def process_documents(limit=None, offset=0):
-    segments = split_documents(limit=limit, offset=offset)
-    embeddings = await create_embeddings(limit=limit, offset=offset)
-    return segments, embeddings
+    split_documents(limit=limit, offset=offset)
+    await create_embeddings(limit=limit, offset=offset)
 
 
 if __name__ == "__main__":

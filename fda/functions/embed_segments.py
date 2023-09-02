@@ -9,7 +9,9 @@ from sqlmodel import Session, select
 from fda.db.engine import engine
 from fda.db.models import DocumentSegment, Embedding
 
-open_ai_key = os.environ["OPENAI_KEY"]
+OPENAI_KEY = os.environ["OPENAI_KEY"]
+
+BATCH_SIZE = 100
 
 
 async def calculate_embeddings(inputs: List[str]) -> List[List[float]]:
@@ -17,7 +19,7 @@ async def calculate_embeddings(inputs: List[str]) -> List[List[float]]:
         res = await client.post(
             "https://api.openai.com/v1/embeddings",
             headers={
-                "Authorization": f"Bearer {open_ai_key}",
+                "Authorization": f"Bearer {OPENAI_KEY}",
                 "Content-Type": "application/json",
             },
             json={
@@ -29,18 +31,21 @@ async def calculate_embeddings(inputs: List[str]) -> List[List[float]]:
         return embeddings
 
 
-async def create_embeddings(limit: int = None, offset: int = 0) -> List[Embedding]:
+async def create_embeddings(limit: int = None, offset: int = 0) -> None:
     with Session(engine) as session:
-        statement = select(DocumentSegment).limit(limit).offset(offset)
-        segments = session.exec(statement).all()
-        embeddings = await calculate_embeddings([seg.content for seg in segments])
-        embeddings = [
-            Embedding(doc_segment=seg, embedding=emb["embedding"])
-            for seg, emb in zip(segments, embeddings)
-        ]
-        session.add_all(embeddings)
-        session.commit()
-        return embeddings
+        rows = session.query(DocumentSegment).limit(limit).offset(offset).count()
+        batches = rows // BATCH_SIZE + 1
+        for i in range(batches):
+            print(f"Processing batch {i}")
+            statement = select(DocumentSegment).limit(BATCH_SIZE).offset(i * BATCH_SIZE)
+            segments = session.exec(statement).all()
+            embeddings = await calculate_embeddings([seg.content for seg in segments])
+            embeddings = [
+                Embedding(doc_segment=seg, embedding=emb["embedding"])
+                for seg, emb in zip(segments, embeddings)
+            ]
+            session.add_all(embeddings)
+            session.commit()
 
 
 if __name__ == "__main__":
