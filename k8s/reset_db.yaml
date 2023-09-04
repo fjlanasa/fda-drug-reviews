@@ -1,0 +1,25 @@
+## Kubernetes for load_drug.py
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: reset-db
+spec:
+  template:
+    metadata:
+      name: reset-db
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: reset-db
+        image: us-east4-docker.pkg.dev/fda-reviews/fda-query/fjlanasa/fda-query
+        resources:
+          requests:
+            cpu: "1"
+            memory: "4Gi"
+          limits:
+            cpu: "1"
+            memory: "8Gi"
+        env:
+          - name: POSTGRES_URL
+            value: "postgresql://postgres:postgres@34.138.209.28:5432"
+        command: ["python", "-m", "fda.db.scripts.reset"]

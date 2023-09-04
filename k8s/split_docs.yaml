@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: 'indexed-job'
+spec:
+  completions: 500
+  parallelism: 1
+  completionMode: Indexed
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: reset-db
+        image: us-east4-docker.pkg.dev/fda-reviews/fda-query/fjlanasa/fda-query
+        resources:
+          requests:
+            cpu: "1"
+            memory: "4Gi"
+          limits:
+            cpu: "1"
+            memory: "8Gi"
+        env:
+          - name: POSTGRES_URL
+            value: "postgresql://postgres:postgres@34.138.209.28:5432"
+          - name: NUM_WORKERS
+            value: "100"
+        command: ["python", "-m", "fda.functions.split_documents"]

@@ -1,7 +1,7 @@
 import asyncio
 import multiprocessing
 import os
-from sys import argv
+import traceback
 from typing import List, Optional
 
 import httpx
@@ -13,11 +13,14 @@ from fda.db.engine import engine
 from fda.db.models import ApplicationDocument, DocumentSegment
 from fda.functions.pdf_to_text import pdf_to_text
 
+index = os.environ.get("JOB_COMPLETION_INDEX", "0")
+num_workers = os.environ.get("NUM_WORKERS", "1")
+
 
 def split_document(doc: ApplicationDocument) -> List[DocumentSegment]:
     try:
         if doc.url.endswith("pdf"):
-            text = asyncio.run(pdf_to_text(doc.url))
+            text = pdf_to_text(doc.url)
         elif doc.url.endswith("cfm") or doc.url.endswith("htm"):
             directory = "/".join(doc.url.split("/")[:-1])
             text = []
@@ -28,7 +31,7 @@ def split_document(doc: ApplicationDocument) -> List[DocumentSegment]:
             )
             for link in links:
                 pdf_url = os.path.join(directory, link["href"])
-                pdf_text = asyncio.run(pdf_to_text(pdf_url))
+                pdf_text = pdf_to_text(pdf_url)
                 text += pdf_text
         else:
             raise Exception(f"Unknown document type: {doc.url}")
@@ -43,23 +46,28 @@ def split_document(doc: ApplicationDocument) -> List[DocumentSegment]:
             for i, segment in enumerate(segments)
         ]
     except Exception as e:
+        traceback.print_exc()
         print(f"Error splitting document {doc.id}, {doc.url}, {e}")
         return []
 
 
-def split_documents(offset: int = 0, limit: Optional[int] = None) -> None:
+def split_documents(index: int = 0, num_workers: int = 1) -> None:
     with Session(engine) as session:
+        rows = session.query(ApplicationDocument).count()
+        offset = rows // num_workers * index
+        limit = rows // num_workers
+        print(f"offset: {offset}, limit: {limit}")
         statement = select(ApplicationDocument).offset(offset).limit(limit)
         docs = session.exec(statement)
-        with multiprocessing.Pool() as pool:
-            segments = pool.map(split_document, docs)
-            segments = [item for sublist in segments for item in sublist]
+
+    for doc in docs:
+        segments = split_document(doc)
+        with Session(engine) as session:
             session.add_all(segments)
             session.commit()
 
 
 if __name__ == "__main__":
-    offset = argv[1] if len(argv) > 1 else 0
-    limit = argv[2] if len(argv) > 2 else None
-    print(f"offset: {offset}, limit: {limit}")
-    split_documents(limit=limit, offset=offset)
+    index = int(index)
+    num_workers = int(num_workers)
+    split_documents(index=index, num_workers=num_workers)

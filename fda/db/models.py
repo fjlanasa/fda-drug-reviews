@@ -1,8 +1,8 @@
 from typing import List, Optional
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import ARRAY, Column, ForeignKey, Index, Text, cast
-from sqlalchemy.dialects.postgresql import array
+from sqlalchemy import Column, ForeignKey, Index, Text, cast
+from sqlalchemy.dialects.postgresql import JSONB, array
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -72,9 +72,9 @@ class DocumentSegment(SQLModel, table=True):
     topics: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     content: str = ...
@@ -109,9 +109,9 @@ class ApplicationDocument(SQLModel, table=True):
     topics: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
 
@@ -208,97 +208,97 @@ class OpenFDA(SQLModel, table=True):
     brand_name: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     generic_name: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     manufacturer_name: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     product_ndc: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     product_type: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     route: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     substance_name: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     rxcui: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     spl_id: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     spl_set_id: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     package_ndc: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
     unii: Optional[List[str]] = Field(
         default=[],
         sa_column=Column(
-            ARRAY(Text),
+            JSONB,
             nullable=False,
-            default=cast(array([], type_=Text), ARRAY(Text)),
+            default=cast(array([], type_=Text), JSONB),
         ),
     )
 
@@ -311,18 +311,4 @@ class OpenFDA(SQLModel, table=True):
     )
     application: Optional["Application"] = Relationship(
         back_populates="openfda",
-    )
-
-    __table_args__ = (
-        Index("ix_generic_name", "generic_name", postgresql_using="gin"),
-        Index("ix_manufacturer_name", "manufacturer_name", postgresql_using="gin"),
-        Index("ix_product_ndc", "product_ndc", postgresql_using="gin"),
-        Index("ix_product_type", "product_type", postgresql_using="gin"),
-        Index("ix_route", "route", postgresql_using="gin"),
-        Index("ix_substance_name", "substance_name", postgresql_using="gin"),
-        Index("ix_rxcui", "rxcui", postgresql_using="gin"),
-        Index("ix_spl_id", "spl_id", postgresql_using="gin"),
-        Index("ix_spl_set_id", "spl_set_id", postgresql_using="gin"),
-        Index("ix_package_ndc", "package_ndc", postgresql_using="gin"),
-        Index("ix_unii", "unii", postgresql_using="gin"),
     )
